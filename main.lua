@@ -1,9 +1,6 @@
 require "loadmap"
 local bump = require "lib/bump"
 
--- WINDOW_WIDTH = love.graphics.getWidth()
--- WINDOW_HEIGHT = love.graphics.getHeight()
-
 tileWidth = 32
 tileHeight = 32
 
@@ -14,7 +11,9 @@ playerHeight = 24
 playerSpeed = 100
 
 GAME_WINDOW_WIDTH = tileWidth * 5
-GAME_WINDOW_HEIGHT = tileHeight * 5
+GAME_WINDOW_HEIGHT = tileHeight * 5 * (love.graphics.getHeight()/love.graphics.getWidth())
+
+debug = true
 
 youwon = false
 
@@ -49,7 +48,8 @@ function love.load()
   -- love.mouse.setGrabbed(true)
 
   -- Load map.
-  map = loadmap('maps/20x20-slim.txt')
+  -- map = loadmap('maps/20x20-slim.txt')
+  map = require 'maps/20x20'
 
   -- Prepare player.
   r, c = findstart(map)
@@ -135,7 +135,6 @@ function love.draw()
   -- Zoom in on the player.
   love.graphics.push()
   -- love.graphics.scale(0.5) -- zoom the camera
-  -- love.graphics.scale(love.graphics.getWidth()/GAME_WINDOW_WIDTH, love.graphics.getHeight()/GAME_WINDOW_HEIGHT) -- zoom the camera
   love.graphics.scale(love.graphics.getWidth()/GAME_WINDOW_WIDTH) -- zoom the camera
   love.graphics.translate(-player.x - playerWidth/2 + GAME_WINDOW_WIDTH/2, -player.y - playerHeight/2 + GAME_WINDOW_HEIGHT/2) -- move the camera position
   
@@ -218,7 +217,7 @@ function love.draw()
   -- Zoom out back again.
   love.graphics.pop()
 
-  debug = true
+  -- Print debuging info.
   if debug then
     love.graphics.print(playerDirection, 0, 0)
   end
