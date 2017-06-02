@@ -12,5 +12,5 @@ function love.conf(t)
   t.window.resizable = true          -- Let the window be user-resizable (boolean)
   t.window.minwidth = 1               -- Minimum window width if the window is resizable (number)
   t.window.minheight = 1              -- Minimum window height if the window is resizable (number)
-  t.window.fullscreen = false         -- Enable fullscreen (boolean)
+  t.window.fullscreen = true         -- Enable fullscreen (boolean)
 end

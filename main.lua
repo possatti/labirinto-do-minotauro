@@ -11,7 +11,11 @@ playerHeight = 24
 playerSpeed = 100
 
 debug = true
-useAcceletometer = true -- Use Android Accelerometer.
+useAcceletometer = false -- Use Android Accelerometer.
+useScreenJoystick = true
+joystickSize = love.graphics.getWidth() / 5
+joystickHorizontalOffset = love.graphics.getWidth() / 20
+joystickVerticalOffset = love.graphics.getWidth() / 20
 
 youwon = false
 
@@ -40,6 +44,7 @@ function love.load()
   -- music:play()
 
   -- Load fonts.
+  smallFont = love.graphics.newFont(12)
   bigFont = love.graphics.newFont(40)
 
   -- Set up quads.
@@ -52,6 +57,7 @@ function love.load()
   playerUpQuad =    love.graphics.newQuad(128, 0, 32, 64, 320, 320)
   playerLeftQuad =  love.graphics.newQuad(160, 0, 32, 64, 320, 320)
   currentPlayerQuad = playerUpQuad
+  joystickQuad = love.graphics.newQuad(32, 64, 32, 32, 320, 320)
 
   -- Set up mouse.
   -- love.mouse.setVisible(true)
@@ -87,6 +93,10 @@ function love.load()
       acceletometer = joystick
     end
   end
+
+  -- Prepare the on screen joystick
+  joystickCenter = {x=joystickSize/2 + joystickHorizontalOffset, y=love.graphics.getHeight() - joystickSize/2 - joystickVerticalOffset}
+  joystickTopLeft = {x=joystickCenter.x - joystickSize/2, y=joystickCenter.y - joystickSize/2}
 end
 
 function love.update(dt)
@@ -95,14 +105,18 @@ function love.update(dt)
     love.event.push('quit')
   end
 
-  -- Direction of mouse onscreen relative to the player.
+  -- Mouse position.
   mouseX, mouseY = love.mouse.getPosition()
-  movementDirection = math.atan2(mouseY - love.graphics.getHeight()/2, mouseX - love.graphics.getWidth()/2)
 
   -- Player movement.
   oldpos = {x=player.x, y=player.y}
   newpos = {x=player.x, y=player.y}
   if love.mouse.isDown(1) then
+    if useScreenJoystick then
+      movementDirection = math.atan2(mouseY - joystickCenter.y, mouseX - joystickCenter.x)
+    else
+      movementDirection = math.atan2(mouseY - love.graphics.getHeight()/2, mouseX - love.graphics.getWidth()/2)
+    end
     newpos.y = player.y + math.sin(movementDirection) * player.speed * dt
     newpos.x = player.x + math.cos(movementDirection) * player.speed * dt
   else
@@ -165,7 +179,7 @@ function love.draw()
   -- Draw the backgroud.
   love.graphics.setBackgroundColor(190, 190, 190, 255)
   for r=-1,#map+2 do
-    for c=-1,#map[1]+2 do
+    for c=-3,#map[1]+5 do
       love.graphics.setColor(255, 255, 255, 255)
       love.graphics.draw(atlas, grassQuad, c*tileWidth, r*tileHeight)
     end
@@ -221,9 +235,17 @@ function love.draw()
   -- Zoom out back again.
   love.graphics.pop()
 
+  -- Draw the joystick.
+  if useScreenJoystick then
+    love.graphics.draw(atlas, joystickQuad, joystickTopLeft.x, joystickTopLeft.y, 0, joystickSize / tileWidth)
+  end
+
   -- Print debuging info.
   if debug then
-    love.graphics.print(playerDirection, 0, 0)
+    love.graphics.setFont(smallFont)
+    fps = love.timer.getFPS()
+    debugInfo = string.format("FPS: %d\ndirection: %f", fps, playerDirection)
+    love.graphics.print(debugInfo, 0, 0)
   end
 
   -- Show a winning message.
