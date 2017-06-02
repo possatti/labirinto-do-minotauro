@@ -10,12 +10,22 @@ playerWidth = 24
 playerHeight = 24
 playerSpeed = 100
 
-GAME_WINDOW_WIDTH = tileWidth * 5
-GAME_WINDOW_HEIGHT = tileHeight * 5 * (love.graphics.getHeight()/love.graphics.getWidth())
-
 debug = true
+useAcceletometer = true -- Use Android Accelerometer.
 
 youwon = false
+
+function getGameWindowWidth()
+  return tileWidth * 5 * (love.graphics.getWidth()/love.graphics.getHeight())
+end
+
+function getGameWindowHeight()
+  return tileHeight * 5
+end
+
+function getXScale()
+  return love.graphics.getWidth() / getGameWindowWidth()
+end
 
 function love.load()
   -- Load images.
@@ -71,6 +81,12 @@ function love.load()
   playerObj = {name='player'}
   world:add(playerObj, player.x, player.y, playerWidth, playerHeight)
 
+  -- Use acceletometer if you find one.
+  for i,joystick in ipairs(love.joystick.getJoysticks()) do
+    if joystick:getName() == "Android Accelerometer" then
+      acceletometer = joystick
+    end
+  end
 end
 
 function love.update(dt)
@@ -101,6 +117,13 @@ function love.update(dt)
     end
     if love.keyboard.isDown('right', 'd') then
       newpos.x = newpos.x + player.speed * dt
+    end
+
+    if useAcceletometer and acceletometer  then
+      local axisX = acceletometer:getAxis(1)
+      local axisY = acceletometer:getAxis(2)
+      newpos.x = oldpos.x + axisX * player.speed * dt * 1.5
+      newpos.y = oldpos.y + axisY * player.speed * dt * 1.5
     end
   end
 
@@ -135,8 +158,9 @@ function love.draw()
   -- Zoom in on the player.
   love.graphics.push()
   -- love.graphics.scale(0.5) -- zoom the camera
-  love.graphics.scale(love.graphics.getWidth()/GAME_WINDOW_WIDTH) -- zoom the camera
-  love.graphics.translate(-player.x - playerWidth/2 + GAME_WINDOW_WIDTH/2, -player.y - playerHeight/2 + GAME_WINDOW_HEIGHT/2) -- move the camera position
+  -- love.graphics.scale(love.graphics.getWidth()/getGameWindowWidth()) -- zoom the camera
+  love.graphics.scale(getXScale()) -- zoom the camera
+  love.graphics.translate(-player.x - playerWidth/2 + getGameWindowWidth()/2, -player.y - playerHeight/2 + getGameWindowHeight()/2) -- move the camera position
   
   -- Draw the backgroud.
   love.graphics.setBackgroundColor(190, 190, 190, 255)
@@ -166,32 +190,12 @@ function love.draw()
       end
     end
   end
-  -- for r,row in ipairs(map) do
-  --   for c,char in ipairs(row) do
-  --     if char == 'W' then
-  --       -- love.graphics.setColor(0, 145, 255, 255)
-  --       -- love.graphics.rectangle('fill', c*wall_width, r*wall_height, wall_width, wall_height)
-  --       love.graphics.setColor(255, 255, 255, 255)
-  --       if r+1 <= #map and map[r+1][c] == 'W' then
-  --         love.graphics.draw(atlas, topWallQuad, c*wallWidth, (r-1)*wallHeight)
-  --       else
-  --         love.graphics.draw(atlas, wallQuad, c*wallWidth, (r-1)*wallHeight)
-  --       end
-
-  --     end
-  --     if char == 'E' then
-  --       -- love.graphics.setColor(0, 255, 0, 255)
-  --       -- love.graphics.rectangle('fill', c*wallWidth, r*wallHeight, wallWidth, wallHeight)
-  --       love.graphics.setColor(255, 255, 255, 255)
-  --       love.graphics.draw(atlas, trophieQuad, c*tileWidth, (r)*tileHeight)
-  --     end
-  --   end
-  -- end
 
   -- Draw the player
-  love.graphics.setColor(0, 0, 255, 255)
-  love.graphics.rectangle('fill', player.x, player.y, playerWidth, playerHeight)
-  -- love.graphics.circle('fill', player.x+playerWidth/2, player.y+playerHeight/2, playerHeight/2, 32)
+  if debug then
+    love.graphics.setColor(0, 0, 255, 125)
+    love.graphics.rectangle('fill', player.x, player.y, playerWidth, playerHeight)
+  end
   love.graphics.setColor(255, 255, 255, 255)
   love.graphics.draw(atlas, currentPlayerQuad, player.x - tileWidth/2 + playerWidth/2, player.y - tileHeight*2 + playerHeight)
 
