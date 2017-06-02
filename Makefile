@@ -16,7 +16,7 @@ PACKAGE_NAME = game.love
 run: all
 	love $(PACKAGE_NAME)
 
-all: $(PACKAGE_NAME)
+all: clean $(PACKAGE_NAME)
 
 $(PACKAGE_NAME): $(ALL_SOURCE_FILES)
 	zip -r $(@) $(?)

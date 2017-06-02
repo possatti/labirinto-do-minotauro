@@ -19,3 +19,7 @@ make      # Defaults to `make run`
 
  - [x] Make collisions with walls.
  - [x] Zoom on the map.
+ - [ ] Fix zoom for different screen sizes.
+ - [ ] Draw different sides of the character.
+ - [ ] Walking animation.
+ - [ ] Build for Android.
