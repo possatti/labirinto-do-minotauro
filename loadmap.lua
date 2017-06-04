@@ -51,6 +51,7 @@ local function loadmap(path, world)
     self.player.x = actualX + player.bump.offset.x
     self.player.y = actualY + player.bump.offset.y
     self.player.direction = newpos.direction
+    self.player.hasMoved  = newpos.hasMoved
   end
 
   -- Draw the player.
@@ -59,26 +60,37 @@ local function loadmap(path, world)
 
     -- Find which quad should be used to draw the player.
     local playerQuad = heroRightQuad
+    local playerAnim = heroRightAnim
     if p.direction > math.pi/4 and p.direction <= 3*math.pi/4 then
       playerQuad = heroDownQuad
+      playerAnim = heroDownAnim
     elseif p.direction < -math.pi/4 and p.direction >= -3*math.pi/4 then
       playerQuad = heroUpQuad
+      playerAnim = heroUpAnim
     elseif p.direction > 3*math.pi/4 or p.direction < -3*math.pi/4 then
       playerQuad = heroLeftQuad
+      playerAnim = heroLeftAnim
     end
 
-    -- Draw the player.
-    love.graphics.draw(
-      heroSprite,
-      playerQuad,
-      math.floor(p.x),
-      math.floor(p.y),
-      0, -- rotation
-      1, -- scale x
-      1, -- scale y
-      p.ox,
-      p.oy
-    )
+    -- Draw player.
+    if p.hasMoved then
+      -- Draw player's walking animation.
+      playerAnim:draw(heroSprite, math.floor(p.x) - p.ox, math.floor(p.y) - p.oy)
+    else
+      -- Draw static player.
+      love.graphics.draw(
+        heroSprite,
+        playerQuad,
+        math.floor(p.x),
+        math.floor(p.y),
+        0, -- rotation
+        1, -- scale x
+        1, -- scale y
+        p.ox,
+        p.oy
+      )
+    end
+
     if enableDebug then
       -- Collision box.
       love.graphics.setColor(0,0,255,125) -- blue

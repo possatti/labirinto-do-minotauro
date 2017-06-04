@@ -1,6 +1,10 @@
+-- Third party.
 sti = require "lib/sti"
 bump = require "lib/bump"
 inspect = require "lib/inspect"
+anim8 = require "lib/anim8"
+
+-- My modules.
 controlling = require "controlling"
 loadmap = require "loadmap"
 onscreen = require "onscreen"
@@ -32,10 +36,16 @@ end
 function love.load()
   -- Load hero image and quads.
   heroSprite = love.graphics.newImage('assets/hero-sprite.png')
-  heroRightQuad = love.graphics.newQuad(0, tileSize*0, tileSize, tileSize, tileSize, tileSize*4)
-  heroDownQuad  = love.graphics.newQuad(0, tileSize*1, tileSize, tileSize, tileSize, tileSize*4)
-  heroLeftQuad  = love.graphics.newQuad(0, tileSize*2, tileSize, tileSize, tileSize, tileSize*4)
-  heroUpQuad    = love.graphics.newQuad(0, tileSize*3, tileSize, tileSize, tileSize, tileSize*4)
+  heroRightQuad = love.graphics.newQuad(0, tileSize*0, tileSize, tileSize, tileSize*3, tileSize*4)
+  heroDownQuad  = love.graphics.newQuad(0, tileSize*1, tileSize, tileSize, tileSize*3, tileSize*4)
+  heroLeftQuad  = love.graphics.newQuad(0, tileSize*2, tileSize, tileSize, tileSize*3, tileSize*4)
+  heroUpQuad    = love.graphics.newQuad(0, tileSize*3, tileSize, tileSize, tileSize*3, tileSize*4)
+  local g = anim8.newGrid(tileSize, tileSize, heroSprite:getWidth(), heroSprite:getHeight())
+  heroRightAnim = anim8.newAnimation(g('1-3',1), 0.1)
+  heroDownAnim  = anim8.newAnimation(g('1-3',2), 0.1)
+  heroLeftAnim  = anim8.newAnimation(g('1-3',3), 0.1)
+  heroUpAnim    = anim8.newAnimation(g('1-3',4), 0.1)
+
 
   -- Load map file
   world = bump.newWorld()
@@ -52,6 +62,12 @@ function love.update(dt)
   if love.keyboard.isDown('escape', 'q') then
     love.event.push('quit')
   end
+
+  -- Update hero's animations.
+  heroRightAnim:update(dt)
+  heroDownAnim:update(dt)
+  heroLeftAnim:update(dt)
+  heroUpAnim:update(dt)
 
   -- Update world
   map:update(dt)

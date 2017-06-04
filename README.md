@@ -23,8 +23,11 @@ make              # Defaults to `make run`
  - [x] Draw different sides of the character.
  - [x] Use accelerometer.
  - [x] Use joystick on screen.
- - [ ] Walking animation.
- - [ ] Build for Android.
+ - [x] Walking animation.
+ - [x] Build for Android.
+ - [ ] Improve Android build by using a different package name and icon.
+ - [ ] Prepare game states and menus.
+ - [ ] Put awesome music.
 
 ## Possible assets
 

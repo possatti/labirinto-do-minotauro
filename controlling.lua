@@ -1,4 +1,5 @@
 local direction = 0
+local playerMoved
 
 local controlling = {
   read = function(dt)
@@ -30,8 +31,8 @@ local controlling = {
       newpos.y = player.y + math.sin(direction) * player.speed * dt
       newpos.x = player.x + math.cos(direction) * player.speed * dt
     else
-      positionChanged = not (newpos.x == player.x and newpos.y == player.y)
-      if positionChanged then
+      playerMoved = not (newpos.x == player.x and newpos.y == player.y)
+      if playerMoved then
         direction = math.atan2(newpos.y - player.y, newpos.x - player.x)
       end
     end
@@ -40,6 +41,7 @@ local controlling = {
       x = newpos.x,
       y = newpos.y,
       direction = direction,
+      hasMoved = playerMoved
     }
   end
 }
