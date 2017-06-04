@@ -1,125 +1,86 @@
-require "loadmap"
+local sti = require "lib/sti"
 local bump = require "lib/bump"
+local inspect = require "lib/inspect"
 
-tileWidth = 32
-tileHeight = 32
-
-wallWidth = 32
-wallHeight = 32
-playerWidth = 24
-playerHeight = 24
+-- Constants.
+tileSize = 16
 playerSpeed = 100
+visibleNumberOfBlocksAroundPlayer = 6
 
-debug = true
-useAcceletometer = false -- Use Android Accelerometer.
-useScreenJoystick = true
-joystickSize = love.graphics.getWidth() / 5
-joystickHorizontalOffset = love.graphics.getWidth() / 20
-joystickVerticalOffset = love.graphics.getWidth() / 20
+-- Debug stuff.
+enableDebug = true
+debugInfo = {'DEBUG'}
+function debug(mystr)
+  table.insert(debugInfo, mystr)
+end
 
-youwon = false
-
+-- Zoom stuff.
 function getGameWindowWidth()
-  return tileWidth * 5 * (love.graphics.getWidth()/love.graphics.getHeight())
+  return math.floor(tileSize * visibleNumberOfBlocksAroundPlayer * (love.graphics.getWidth()/love.graphics.getHeight()))
 end
-
 function getGameWindowHeight()
-  return tileHeight * 5
+  return math.floor(tileSize * visibleNumberOfBlocksAroundPlayer)
 end
-
 function getXScale()
   return love.graphics.getWidth() / getGameWindowWidth()
 end
 
+
 function love.load()
-  -- Load images.
-  love.graphics.setDefaultFilter('nearest', 'nearest')
-  atlas = love.graphics.newImage('assets/atlas.png')
+  -- Load map file
+  world = bump.newWorld()
+  map = sti("maps/20x20.lua", {"bump"})
+  map:bump_init(world)
+  -- print(inspect(map)) -- #!#
 
-  -- Load music/sounds.
-  -- music = love.audio.newSource("assets/foorocks.ogg")
-  -- music:setVolume(0.8)
-  -- music:setLooping(true)
-  -- music:rewind()
-  -- music:play()
-
-  -- Load fonts.
-  smallFont = love.graphics.newFont(12)
-  bigFont = love.graphics.newFont(40)
-
-  -- Set up quads.
-  wallQuad = love.graphics.newQuad(0, 0, 32, 64, 320, 320)
-  topWallQuad = love.graphics.newQuad(0, 64, 32, 64, 320, 320)
-  grassQuad = love.graphics.newQuad(32, 0, 32, 32, 320, 320)
-  trophieQuad = love.graphics.newQuad(32, 32, 32, 32, 320, 320)
-  playerDownQuad =  love.graphics.newQuad(64, 0, 32, 64, 320, 320)
-  playerRightQuad = love.graphics.newQuad(96, 0, 32, 64, 320, 320)
-  playerUpQuad =    love.graphics.newQuad(128, 0, 32, 64, 320, 320)
-  playerLeftQuad =  love.graphics.newQuad(160, 0, 32, 64, 320, 320)
-  currentPlayerQuad = playerUpQuad
-  joystickQuad = love.graphics.newQuad(32, 64, 32, 32, 320, 320)
-
-  -- Set up mouse.
-  -- love.mouse.setVisible(true)
-  -- love.mouse.setGrabbed(true)
-
-  -- Load map.
-  -- map = loadmap('maps/20x20-slim.txt')
-  map = require 'maps/20x20'
-
-  -- Prepare player.
-  r, c = findstart(map)
-  player = {x = c*wallWidth+playerWidth/2, y = r*wallHeight+playerHeight/2, speed = playerSpeed}
-  playerDirection = 0
-
-  -- Prepare bumping world.
-  world = bump.newWorld(32)
-  for r,row in ipairs(map) do
-    for c,char in ipairs(row) do
-      if char == 'W' then
-        world:add({name='wall'}, c*wallWidth, r*wallHeight, wallWidth, wallHeight)
-      end
-      if char == 'E' then
-        world:add({name='end'}, c*wallWidth, r*wallHeight, wallWidth, wallHeight)
-      end
-    end
-  end
-  playerObj = {name='player'}
-  world:add(playerObj, player.x, player.y, playerWidth, playerHeight)
-
-  -- Use acceletometer if you find one.
-  for i,joystick in ipairs(love.joystick.getJoysticks()) do
-    if joystick:getName() == "Android Accelerometer" then
-      acceletometer = joystick
+  -- Create new dynamic data layer called "Sprites" as the 8th layer
+  local spritesLayer = map:addCustomLayer("Sprites", 8)
+  local playerData
+  for k, object in pairs(map.objects) do
+    if object.name == "Player" then
+      playerData = object
+      break
     end
   end
 
-  -- Prepare the on screen joystick
-  joystickCenter = {x=joystickSize/2 + joystickHorizontalOffset, y=love.graphics.getHeight() - joystickSize/2 - joystickVerticalOffset}
-  joystickTopLeft = {x=joystickCenter.x - joystickSize/2, y=joystickCenter.y - joystickSize/2}
-end
-
-function love.update(dt)
-  -- Quit game.
-  if love.keyboard.isDown('escape', 'q') then
-    love.event.push('quit')
+  -- Grab the loaded tileset.
+  local tileset
+  for i,v in ipairs(map.tilesets) do
+    if v.name == '16x16 Dungeon Tileset' then
+      tileset = v
+      break
+    end
   end
 
-  -- Mouse position.
-  mouseX, mouseY = love.mouse.getPosition()
+  -- Create player object
+  player = {
+    atlas   = tileset.image,
+    quad    = love.graphics.newQuad(0, tileSize*4, tileSize, tileSize, 256, 160),
+    x       = playerData.x,
+    y       = playerData.y,
+    ox      = tileSize/2,
+    oy      = tileSize,
+    width   = tileSize,
+    height  = tileSize,
+    speed   = playerSpeed,
+    bump = {
+      offset = {
+        x = tileSize/4,
+        y = tileSize/4,
+      },
+      width  = tileSize/2,
+      height = tileSize/2,
+    },
+  }
+  spritesLayer.player = player
+  world:add(player, player.x - player.bump.offset.x, player.y - player.bump.offset.y, player.bump.width, player.bump.height)
 
-  -- Player movement.
-  oldpos = {x=player.x, y=player.y}
-  newpos = {x=player.x, y=player.y}
-  if love.mouse.isDown(1) then
-    if useScreenJoystick then
-      movementDirection = math.atan2(mouseY - joystickCenter.y, mouseX - joystickCenter.x)
-    else
-      movementDirection = math.atan2(mouseY - love.graphics.getHeight()/2, mouseX - love.graphics.getWidth()/2)
-    end
-    newpos.y = player.y + math.sin(movementDirection) * player.speed * dt
-    newpos.x = player.x + math.cos(movementDirection) * player.speed * dt
-  else
+  -- Update player location.
+  spritesLayer.update = function(self, dt)
+    newpos = {
+      x = self.player.x,
+      y = self.player.y,
+    }
     if love.keyboard.isDown('up', 'w') then
       newpos.y = newpos.y - player.speed * dt
     end
@@ -132,126 +93,77 @@ function love.update(dt)
     if love.keyboard.isDown('right', 'd') then
       newpos.x = newpos.x + player.speed * dt
     end
+    local actualX, actualY, cols, len = world:move(self.player, newpos.x - player.bump.offset.x, newpos.y - player.bump.offset.y)
 
-    if useAcceletometer and acceletometer  then
-      local axisX = acceletometer:getAxis(1)
-      local axisY = acceletometer:getAxis(2)
-      newpos.x = oldpos.x + axisX * player.speed * dt * 1.5
-      newpos.y = oldpos.y + axisY * player.speed * dt * 1.5
-    end
+    self.player.x = actualX + player.bump.offset.x
+    self.player.y = actualY + player.bump.offset.y
   end
 
-  -- Check where the player is facing to.
-  -- if  (newpos.x == oldpos.x and newpos.x == oldpos.x) then
-    playerDirection = math.atan2(newpos.y - oldpos.y, newpos.x - oldpos.x)
-    if playerDirection > -math.pi/4 and playerDirection <= math.pi/4 then
-      currentPlayerQuad = playerRightQuad
-    elseif playerDirection > math.pi/4 and playerDirection <= 3*math.pi/4 then
-      currentPlayerQuad = playerDownQuad
-    elseif playerDirection > 3*math.pi/4 or playerDirection < -3*math.pi/4 then
-      currentPlayerQuad = playerLeftQuad
-    elseif playerDirection <= math.pi/4 and playerDirection >= -3*math.pi/4 then
-      currentPlayerQuad = playerUpQuad
-    end
-  -- end
+  -- Draw the player.
+  spritesLayer.draw = function(self)
+    local p = self.player
+    love.graphics.draw(
+      self.player.atlas,
+      self.player.quad,
+      math.floor(self.player.x),
+      math.floor(self.player.y),
+      0,
+      1,
+      1,
+      self.player.ox,
+      self.player.oy
+    )
+    if enableDebug then
+      -- Collision box.
+      love.graphics.setColor(0,0,255,125) -- blue
+      love.graphics.rectangle('fill', math.floor(p.x - p.bump.offset.x), math.floor(p.y - p.bump.offset.y), p.bump.width, p.bump.height)
+      debug(string.format('player: %d, %d', self.player.x, self.player.y))
 
-  -- Process colissions.
-  local actualX, actualY, cols, len = world:move(playerObj, newpos.x, newpos.y)
-  player.x = actualX
-  player.y = actualY
-
-  -- Check whether we touched the finishing line.
-  for i,col in ipairs(cols) do
-    if col.other.name == 'end' then
-      youwon = true
+      -- Point marking player location.
+      love.graphics.setColor(255,255,255,255)
+      love.graphics.setPointSize(2)
+      love.graphics.points(math.floor(self.player.x), math.floor(self.player.y))
     end
   end
 end
 
+function love.update(dt)
+  -- Quit game.
+  if love.keyboard.isDown('escape', 'q') then
+    love.event.push('quit')
+  end
+
+  -- Update world
+  map:update(dt)
+end
+
 function love.draw()
-  -- Zoom in on the player.
-  love.graphics.push()
-  -- love.graphics.scale(0.5) -- zoom the camera
-  -- love.graphics.scale(love.graphics.getWidth()/getGameWindowWidth()) -- zoom the camera
-  love.graphics.scale(getXScale()) -- zoom the camera
-  love.graphics.translate(-player.x - playerWidth/2 + getGameWindowWidth()/2, -player.y - playerHeight/2 + getGameWindowHeight()/2) -- move the camera position
-  
-  -- Draw the backgroud.
-  love.graphics.setBackgroundColor(190, 190, 190, 255)
-  for r=-1,#map+2 do
-    for c=-3,#map[1]+5 do
-      love.graphics.setColor(255, 255, 255, 255)
-      love.graphics.draw(atlas, grassQuad, c*tileWidth, r*tileHeight)
+  -- Zoom scale and translation factors.
+  local sx = getXScale()
+  local tx = -player.x + getGameWindowWidth()/2
+  local ty = -player.y + getGameWindowHeight()/2
+  tx = math.floor(tx)
+  ty = math.floor(ty)
+
+  -- Draw world.
+  map:draw(tx, ty, sx, sx)
+
+  -- Draw collision boxes.
+  if enableDebug then
+    love.graphics.push()
+    love.graphics.scale(sx)
+    love.graphics.translate(tx, ty)
+    -- map:bump_draw(world,0,0,1,1)
+    love.graphics.pop()
+  end
+
+  -- Print debug info.
+  if enableDebug then
+    debug(string.format('FPS: %d', love.timer.getFPS()))
+    debug(string.format('Window: %.2f, %.2f', getGameWindowWidth(), getGameWindowHeight()))
+    for i,v in ipairs(debugInfo) do
+      love.graphics.print(v, 0, (i-1)*14)
     end
-  end
-
-  -- Draw Walls behind the player.
-  playerRow = math.floor(player.y/tileHeight)
-  for r=1,playerRow do
-    row = map[r]
-    for c=1,#row do
-      char = row[c]
-      if char == 'W' then
-        love.graphics.setColor(255, 255, 255, 255)
-        if r+1 <= #map and map[r+1][c] == 'W' then
-          love.graphics.draw(atlas, topWallQuad, c*wallWidth, (r-1)*wallHeight)
-        else
-          love.graphics.draw(atlas, wallQuad, c*wallWidth, (r-1)*wallHeight)
-        end
-      elseif char == 'E' then
-        love.graphics.setColor(255, 255, 255, 255)
-        love.graphics.draw(atlas, trophieQuad, c*tileWidth, (r)*tileHeight)
-      end
-    end
-  end
-
-  -- Draw the player
-  if debug then
-    love.graphics.setColor(0, 0, 255, 125)
-    love.graphics.rectangle('fill', player.x, player.y, playerWidth, playerHeight)
-  end
-  love.graphics.setColor(255, 255, 255, 255)
-  love.graphics.draw(atlas, currentPlayerQuad, player.x - tileWidth/2 + playerWidth/2, player.y - tileHeight*2 + playerHeight)
-
-  -- Draw Walls in front of the player.
-  for r=playerRow,#map do
-    row = map[r]
-    for c=1,#row do
-      char = row[c]
-      if char == 'W' then
-        love.graphics.setColor(255, 255, 255, 255)
-        if r+1 <= #map and map[r+1][c] == 'W' then
-          love.graphics.draw(atlas, topWallQuad, c*wallWidth, (r-1)*wallHeight)
-        else
-          love.graphics.draw(atlas, wallQuad, c*wallWidth, (r-1)*wallHeight)
-        end
-      elseif char == 'E' then
-        love.graphics.setColor(255, 255, 255, 255)
-        love.graphics.draw(atlas, trophieQuad, c*tileWidth, (r)*tileHeight)
-      end
-    end
-  end
-
-  -- Zoom out back again.
-  love.graphics.pop()
-
-  -- Draw the joystick.
-  if useScreenJoystick then
-    love.graphics.draw(atlas, joystickQuad, joystickTopLeft.x, joystickTopLeft.y, 0, joystickSize / tileWidth)
-  end
-
-  -- Print debuging info.
-  if debug then
-    love.graphics.setFont(smallFont)
-    fps = love.timer.getFPS()
-    debugInfo = string.format("FPS: %d\ndirection: %f", fps, playerDirection)
-    love.graphics.print(debugInfo, 0, 0)
-  end
-
-  -- Show a winning message.
-  if youwon then
-    love.graphics.setFont(bigFont)
-    love.graphics.setColor(255, 0, 0, 255)
-    love.graphics.print("You won!", love.graphics.getWidth()/2-80, love.graphics.getHeight()/2-50)
+    debugInfo = {'DEBUG'}
   end
 end

@@ -16,6 +16,8 @@ Running LÖVE games on Android
  - Install the Android NDK (https://developer.android.com/ndk/downloads/index.html).
  - Clone the `love-android-sdl2` repo.
    - `git clone --depth 1 https://bitbucket.org/MartinFelis/love-android-sdl2`
+ - ...
+ - `./gradlew build`
 
 ## Other
  - Maybe `Start Gamedev` is easier: https://www.youtube.com/watch?annotation_id=annotation_444447295&feature=iv&src_vid=vfn1nTjPuOY&v=TAZo-pin4nE
