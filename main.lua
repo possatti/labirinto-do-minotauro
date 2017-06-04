@@ -1,7 +1,9 @@
 sti = require "lib/sti"
 bump = require "lib/bump"
 inspect = require "lib/inspect"
-local loadmap = require "loadmap"
+controlling = require "controlling"
+loadmap = require "loadmap"
+onscreen = require "onscreen"
 
 -- Constants.
 tileSize = 16
@@ -33,6 +35,9 @@ function love.load()
   local loadedData = loadmap('maps/20x20.lua', world)
   map = loadedData.map
   player = loadedData.player
+
+  -- Load on-screen controls.
+  onscreen:load()
 end
 
 function love.update(dt)
@@ -55,6 +60,9 @@ function love.draw()
 
   -- Draw world.
   map:draw(tx, ty, sx, sx)
+
+  -- Draw onscreen controls
+  onscreen:draw()
 
   -- Draw collision boxes.
   if enableDebug then

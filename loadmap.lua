@@ -23,15 +23,16 @@ local function loadmap(path, world)
 
   -- Create player object
   local player = {
-    atlas   = tileset.image,
-    quad    = love.graphics.newQuad(0, tileSize*4, tileSize, tileSize, 256, 160),
-    x       = playerData.x,
-    y       = playerData.y,
-    ox      = tileSize/2,
-    oy      = tileSize,
-    width   = tileSize,
-    height  = tileSize,
-    speed   = playerSpeed,
+    atlas     = tileset.image,
+    quad      = love.graphics.newQuad(0, tileSize*4, tileSize, tileSize, 256, 160),
+    x         = playerData.x,
+    y         = playerData.y,
+    ox        = tileSize/2,
+    oy        = tileSize,
+    width     = tileSize,
+    height    = tileSize,
+    speed     = playerSpeed,
+    direction = 0,
     bump = {
       offset = {
         x = tileSize/4,
@@ -46,41 +47,27 @@ local function loadmap(path, world)
 
   -- Update player location.
   spritesLayer.update = function(self, dt)
-    newpos = {
-      x = self.player.x,
-      y = self.player.y,
-    }
-    if love.keyboard.isDown('up', 'w') then
-      newpos.y = newpos.y - player.speed * dt
-    end
-    if love.keyboard.isDown('down', 's') then
-      newpos.y = newpos.y + player.speed * dt
-    end
-    if love.keyboard.isDown('left', 'a') then
-      newpos.x = newpos.x - player.speed * dt
-    end
-    if love.keyboard.isDown('right', 'd') then
-      newpos.x = newpos.x + player.speed * dt
-    end
+    local newpos = controlling.read(dt)
     local actualX, actualY, cols, len = world:move(self.player, newpos.x - player.bump.offset.x, newpos.y - player.bump.offset.y)
 
     self.player.x = actualX + player.bump.offset.x
     self.player.y = actualY + player.bump.offset.y
+    self.player.direction = newpos.direction
   end
 
   -- Draw the player.
   spritesLayer.draw = function(self)
     local p = self.player
     love.graphics.draw(
-      self.player.atlas,
-      self.player.quad,
-      math.floor(self.player.x),
-      math.floor(self.player.y),
-      0,
-      1,
-      1,
-      self.player.ox,
-      self.player.oy
+      p.atlas,
+      p.quad,
+      math.floor(p.x),
+      math.floor(p.y),
+      0, -- rotation
+      1, -- scale x
+      1, -- scale y
+      p.ox,
+      p.oy
     )
     if enableDebug then
       -- Collision box.
@@ -92,6 +79,13 @@ local function loadmap(path, world)
       love.graphics.setColor(255,255,255,255)
       love.graphics.setPointSize(2)
       love.graphics.points(math.floor(self.player.x), math.floor(self.player.y))
+
+      -- Point marking player direction.
+      love.graphics.setColor(255,0,0,255)
+      local dY = player.y + math.sin(p.direction) * tileSize
+      local dX = player.x + math.cos(p.direction) * tileSize
+      love.graphics.points(math.floor(dX), math.floor(dY))
+      love.graphics.setColor(255,255,255,255)
     end
   end
 
