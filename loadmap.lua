@@ -23,8 +23,6 @@ local function loadmap(path, world)
 
   -- Create player object
   local player = {
-    atlas     = tileset.image,
-    quad      = love.graphics.newQuad(0, tileSize*4, tileSize, tileSize, 256, 160),
     x         = playerData.x,
     y         = playerData.y,
     ox        = tileSize/2,
@@ -58,9 +56,21 @@ local function loadmap(path, world)
   -- Draw the player.
   spritesLayer.draw = function(self)
     local p = self.player
+
+    -- Find which quad should be used to draw the player.
+    local playerQuad = heroRightQuad
+    if p.direction > math.pi/4 and p.direction <= 3*math.pi/4 then
+      playerQuad = heroDownQuad
+    elseif p.direction < -math.pi/4 and p.direction >= -3*math.pi/4 then
+      playerQuad = heroUpQuad
+    elseif p.direction > 3*math.pi/4 or p.direction < -3*math.pi/4 then
+      playerQuad = heroLeftQuad
+    end
+
+    -- Draw the player.
     love.graphics.draw(
-      p.atlas,
-      p.quad,
+      heroSprite,
+      playerQuad,
       math.floor(p.x),
       math.floor(p.y),
       0, -- rotation
@@ -73,12 +83,12 @@ local function loadmap(path, world)
       -- Collision box.
       love.graphics.setColor(0,0,255,125) -- blue
       love.graphics.rectangle('fill', math.floor(p.x - p.bump.offset.x), math.floor(p.y - p.bump.offset.y), p.bump.width, p.bump.height)
-      debug(string.format('player: %d, %d', self.player.x, self.player.y))
+      debug(string.format('player: %d, %d, %.4f', p.x, p.y, p.direction))
 
       -- Point marking player location.
       love.graphics.setColor(255,255,255,255)
       love.graphics.setPointSize(2)
-      love.graphics.points(math.floor(self.player.x), math.floor(self.player.y))
+      love.graphics.points(math.floor(p.x), math.floor(p.y))
 
       -- Point marking player direction.
       love.graphics.setColor(255,0,0,255)

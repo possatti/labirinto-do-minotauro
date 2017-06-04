@@ -30,6 +30,13 @@ end
 
 
 function love.load()
+  -- Load hero image and quads.
+  heroSprite = love.graphics.newImage('assets/hero-sprite.png')
+  heroRightQuad = love.graphics.newQuad(0, tileSize*0, tileSize, tileSize, tileSize, tileSize*4)
+  heroDownQuad  = love.graphics.newQuad(0, tileSize*1, tileSize, tileSize, tileSize, tileSize*4)
+  heroLeftQuad  = love.graphics.newQuad(0, tileSize*2, tileSize, tileSize, tileSize, tileSize*4)
+  heroUpQuad    = love.graphics.newQuad(0, tileSize*3, tileSize, tileSize, tileSize, tileSize*4)
+
   -- Load map file
   world = bump.newWorld()
   local loadedData = loadmap('maps/20x20.lua', world)
