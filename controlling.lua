@@ -23,17 +23,32 @@ local controlling = {
     end
 
     -- Mouse events
-    if love.mouse.isDown(1) then
-      local mouse = {}
-      mouse.x, mouse.y = love.mouse.getPosition()
-      local dirCenter = onscreen.directional.center
-      direction = math.atan2(mouse.y - dirCenter.y, mouse.x - dirCenter.x)
+    -- if love.mouse.isDown(1) then
+    --   local mouse = {}
+    --   mouse.x, mouse.y = love.mouse.getPosition()
+    --   local dirCenter = onscreen.directional.center
+    --   direction = math.atan2(mouse.y - dirCenter.y, mouse.x - dirCenter.x)
+    --   newpos.y = player.y + math.sin(direction) * player.speed * dt
+    --   newpos.x = player.x + math.cos(direction) * player.speed * dt
+    -- else
+    --   playerMoved = not (newpos.x == player.x and newpos.y == player.y)
+    --   if playerMoved then
+    --     direction = math.atan2(newpos.y - player.y, newpos.x - player.x)
+    --   end
+    -- end
+    dirPress = onscreen:update(dt)
+    if dirPress then
+      direction = dirPress.direction
       newpos.y = player.y + math.sin(direction) * player.speed * dt
       newpos.x = player.x + math.cos(direction) * player.speed * dt
+      playerMoved = true
     else
-      playerMoved = not (newpos.x == player.x and newpos.y == player.y)
-      if playerMoved then
+      -- If player moved without touching the screen, we find the derection he is facing.
+      if not (newpos.x == player.x and newpos.y == player.y) then
         direction = math.atan2(newpos.y - player.y, newpos.x - player.x)
+        playerMoved = true
+      else
+        playerMoved = false
       end
     end
 

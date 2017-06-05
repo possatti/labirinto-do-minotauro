@@ -15,7 +15,7 @@ playerSpeed = 100
 visibleNumberOfBlocksAroundPlayer = 6
 
 -- Debug stuff.
-enableDebug = false
+enableDebug = true
 debugInfo = {'DEBUG'}
 function debug(mystr)
   if mystr then
@@ -26,7 +26,8 @@ end
 -- Game states
 titlescreenState = require "gamestates/titlescreen"
 gameState = require "gamestates/game"
-gamestate = titlescreenState
+-- gamestate = titlescreenState
+gamestate = gameState
 
 -- Zoom stuff.
 function getGameWindowWidth()
