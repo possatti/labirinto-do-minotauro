@@ -15,11 +15,18 @@ playerSpeed = 100
 visibleNumberOfBlocksAroundPlayer = 6
 
 -- Debug stuff.
-enableDebug = true
+enableDebug = false
 debugInfo = {'DEBUG'}
 function debug(mystr)
-  table.insert(debugInfo, mystr)
+  if mystr then
+    table.insert(debugInfo, mystr)
+  end
 end
+
+-- Game states
+titlescreenState = require "gamestates/titlescreen"
+gameState = require "gamestates/game"
+gamestate = titlescreenState
 
 -- Zoom stuff.
 function getGameWindowWidth()
@@ -46,7 +53,6 @@ function love.load()
   heroLeftAnim  = anim8.newAnimation(g('1-3',3), 0.1)
   heroUpAnim    = anim8.newAnimation(g('1-3',4), 0.1)
 
-
   -- Load map file
   world = bump.newWorld()
   local loadedData = loadmap('maps/20x20.lua', world)
@@ -55,6 +61,26 @@ function love.load()
 
   -- Load on-screen controls.
   onscreen:load()
+
+  -- Load fonts.
+  debugFont = love.graphics.newFont(12)
+  -- pixelFont = love.graphics.newFont('assets/fonts/04b03Regular.ttf')
+
+  -- Load gamestates.
+  titlescreenState:load()
+  gameState:load()
+end
+
+function love.keyreleased(key, code)
+  if gamestate.keyreleased then
+    gamestate:keyreleased(key, code)
+  end
+end
+
+function love.mousepressed(x, y, button, isTouch)
+  if gamestate.mousepressed then
+    gamestate:mousepressed(x, y, button, isTouch)
+  end
 end
 
 function love.update(dt)
@@ -63,41 +89,18 @@ function love.update(dt)
     love.event.push('quit')
   end
 
-  -- Update hero's animations.
-  heroRightAnim:update(dt)
-  heroDownAnim:update(dt)
-  heroLeftAnim:update(dt)
-  heroUpAnim:update(dt)
-
-  -- Update world
-  map:update(dt)
+  if gamestate.update then
+    gamestate:update(dt)
+  end
 end
 
 function love.draw()
-  -- Zoom scale and translation factors.
-  local sx = getXScale()
-  local tx = -player.x + getGameWindowWidth()/2
-  local ty = -player.y + getGameWindowHeight()/2
-  tx = math.floor(tx)
-  ty = math.floor(ty)
-
-  -- Draw world.
-  map:draw(tx, ty, sx, sx)
-
-  -- Draw onscreen controls
-  onscreen:draw()
-
-  -- Draw collision boxes.
-  if enableDebug then
-    love.graphics.push()
-    love.graphics.scale(sx)
-    love.graphics.translate(tx, ty)
-    -- map:bump_draw(world,0,0,1,1)
-    love.graphics.pop()
-  end
+  gamestate:draw()
 
   -- Print debug info.
   if enableDebug then
+    love.graphics.setFont(debugFont)
+    love.graphics.setColor(255,255,255,255)
     debug(string.format('FPS: %d', love.timer.getFPS()))
     debug(string.format('Window: %.2f, %.2f', getGameWindowWidth(), getGameWindowHeight()))
     for i,v in ipairs(debugInfo) do

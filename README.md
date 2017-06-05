@@ -29,16 +29,30 @@ make              # Defaults to `make run`
  - [ ] Prepare game states and menus.
  - [ ] Put awesome music.
 
+## Assets used
+
+On-screen controls:
+ - https://opengameart.org/content/onscreen-controls-8-styles
+
+Tiles and characters:
+ - https://0x72.itch.io/16x16-dungeon-tileset (with some customization of my own)
+
 ## Possible assets
 
 Music:
  * https://bocuma.itch.io/bocuma-music-bundle-01-35-tracks
+   - Wind on Fire
+   - Among the Free
+   - DayWorld
+   - The Moon is Down
+   - Shatter Me
+   - The Fixed Period
  - https://bocuma.itch.io/bocuma-music-bundle-02-35-tracks
 
 Pixel Fonts:
  * 04b03Regular (I've seen on itch.io): http://www.911fonts.com/font/download_04b03Regular_434.htm
- * https://www.fonts.com/font/urw/fr73-pixel?QueryFontType=Web&src=GoogleWebFonts
- - https://www.fonts.com/font/graviton/pixelar?QueryFontType=Web&src=GoogleWebFonts
+ - (It's not freeee!) https://www.fonts.com/font/urw/fr73-pixel?QueryFontType=Web&src=GoogleWebFonts
+ - (It's not freeee!) https://www.fonts.com/font/graviton/pixelar?QueryFontType=Web&src=GoogleWebFonts
 
 Controls:
  - https://opengameart.org/content/onscreen-controls-8-styles

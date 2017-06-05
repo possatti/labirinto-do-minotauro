@@ -5,10 +5,10 @@ SHELL=/bin/bash
 
 # Source files
 IMAGE_FILES = $(shell find -name "*.png")
+FONT_FILES = $(shell find -name "*.ttf")
 SOUND_FILES = $(shell find -name "*.wav") $(shell find -name "*.mp3") $(shell find -name "*.ogg")
 SOURCE_FILES = $(shell find -name "*.lua")
-MAP_FILES = $(shell find maps -name "*.txt")
-ALL_SOURCE_FILES = $(IMAGE_FILES) $(SOUND_FILES) $(SOURCE_FILES) $(MAP_FILES)
+ALL_SOURCE_FILES = $(IMAGE_FILES) $(SOUND_FILES) $(SOURCE_FILES) $(MAP_FILES) $(FONT_FILES)
 
 # Package name
 PACKAGE_NAME = $(shell basename `pwd`).love
