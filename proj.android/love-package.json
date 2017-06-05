@@ -1,0 +1,7 @@
+{
+  "name": "Amazing Maze",
+  "activity": "proj.android/MazeActivity.java",
+  "version": "beta",
+  "package": "br.com.possatti.maze",
+  "icons": "assets/icon"
+}
