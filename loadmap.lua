@@ -1,30 +1,34 @@
+-- Filter to be used in world:move().
+local function bumpfilter(item, other)
+  -- Let the player cross the Upstairs/Downstairs areas.
+  if other.name == 'Upstairs' or other.name == 'Downstairs' then
+    return 'cross'
+  else
+    return 'slide'
+  end
+end
+
 local function loadmap(path, world)
   local newmap = sti(path, {"bump"})
   newmap:bump_init(world)
 
-  -- Create new dynamic data layer called "Sprites" as the 8th layer
-  local spritesLayer = newmap:addCustomLayer("Sprites", 8)
-  local playerData
+  -- Create new dynamic data layer.
+  local dynamicLayer = newmap:addCustomLayer("Dynamic Layer")
+  local playerObject
   for k, object in pairs(newmap.objects) do
     if object.name == "Player" then
-      playerData = object
-      break
-    end
-  end
-
-  -- Grab the loaded tileset.
-  local tileset
-  for i,v in ipairs(newmap.tilesets) do
-    if v.name == '16x16 Dungeon Tileset' then
-      tileset = v
-      break
+      playerObject = object
+    elseif object.name == "Upstairs" then
+      upstairsObject = object
+    elseif object.name == "Downstairs" then
+      downstairsObject = object
     end
   end
 
   -- Create player object
   local player = {
-    x         = playerData.x,
-    y         = playerData.y,
+    x         = playerObject.x,
+    y         = playerObject.y,
     ox        = tileSize/2,
     oy        = tileSize,
     width     = tileSize,
@@ -40,22 +44,38 @@ local function loadmap(path, world)
       height = tileSize/2,
     },
   }
-  spritesLayer.player = player
+  dynamicLayer.player = player
+  dynamicLayer.upstairs = upstairsObject
+  dynamicLayer.downstairs = downstairsObject
   world:add(player, player.x - player.bump.offset.x, player.y - player.bump.offset.y, player.bump.width, player.bump.height)
+  if upstairsObject then
+    world:add(upstairsObject, upstairsObject.x, upstairsObject.y, upstairsObject.width, upstairsObject.height)
+  end
+  if downstairsObject then
+    world:add(downstairsObject, downstairsObject.x, downstairsObject.y, downstairsObject.width, downstairsObject.height)
+  end
 
   -- Update player location.
-  spritesLayer.update = function(self, dt)
+  dynamicLayer.update = function(self, dt)
     local newpos = controlling.read(dt)
-    local actualX, actualY, cols, len = world:move(self.player, newpos.x - player.bump.offset.x, newpos.y - player.bump.offset.y)
+    local actualX, actualY, cols, len = world:move(self.player, newpos.x - player.bump.offset.x, newpos.y - player.bump.offset.y, bumpfilter)
 
     self.player.x = actualX + player.bump.offset.x
     self.player.y = actualY + player.bump.offset.y
     self.player.direction = newpos.direction
     self.player.hasMoved  = newpos.hasMoved
+
+    for i, col in ipairs(cols) do
+      if col.other.name == 'Upstairs' then
+        debug('Move upstairs.')
+      elseif col.other.name == 'Downstairs' then
+        debug('Move downstairs.')
+      end
+    end
   end
 
   -- Draw the player.
-  spritesLayer.draw = function(self)
+  dynamicLayer.draw = function(self)
     local p = self.player
 
     -- Find which quad should be used to draw the player.

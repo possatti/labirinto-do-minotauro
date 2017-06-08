@@ -56,7 +56,8 @@ function love.load()
 
   -- Load map file
   world = bump.newWorld()
-  local loadedData = loadmap('maps/20x20.lua', world)
+  -- local loadedData = loadmap('maps/20x20.lua', world)
+  local loadedData = loadmap('maps/first-level.lua', world)
   map = loadedData.map
   player = loadedData.player
 

@@ -29,6 +29,14 @@ make              # Defaults to `make run`
  - [ ] Prepare game states and menus.
  - [ ] Put awesome music.
 
+## Might use these libs
+
+Game states:
+ - http://hump.readthedocs.io/en/latest/gamestate.html
+
+Dungeon generation:
+ - https://github.com/SiENcE/astray
+
 ## Assets used
 
 On-screen controls:
