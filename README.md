@@ -40,6 +40,9 @@ Dungeon generation:
 Classes:
  - https://github.com/kikito/middleclass
 
+Google Play Services:
+ - https://love2d.org/forums/viewtopic.php?f=5&t=82166&hilit=android
+
 ## Assets used
 
 On-screen controls:
@@ -95,3 +98,8 @@ Good stuff but not useful:
  - (They don't look down) https://opengameart.org/content/micro-character-bases-basics
  - (They don't look down) https://lionheart963.itch.io/goblin-sprite
  - (They don't look down) https://ansimuz.itch.io/grotto-escape-chibi-monsters
+
+## Other stuff
+
+I can use inkscape CLI to produce a png from a svg:
+ - https://stackoverflow.com/a/14174624

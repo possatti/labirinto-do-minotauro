@@ -20,16 +20,24 @@ if [ -z "${LOVE_ANDROID_SDL2_HOME}" ]; then
 fi
 
 # Copy game.love
-mkdir -p ${LOVE_ANDROID_SDL2_HOME}/app/src/main/assets
-cp labirinto.love "${LOVE_ANDROID_SDL2_HOME}/app/src/main/assets/game.love" || err 'Could not copy game.love.'
-
-# Copy MazeActivity.java
-mkdir -p ${LOVE_ANDROID_SDL2_HOME}/app/src/main/br/com/possatti/maze || err 'Cannot create directory.'
-cp "proj.android/MazeActivity.java" ${LOVE_ANDROID_SDL2_HOME}/app/src/main/br/com/possatti/maze || err 'Could not copy MazeActivity.'
+LOVE_PACKAGE_DEST="${LOVE_ANDROID_SDL2_HOME}/app/src/main/assets"
+mkdir -p "${LOVE_PACKAGE_DEST}"
+cp labirinto.love "${LOVE_PACKAGE_DEST}/game.love" || err 'Could not copy game.love.'
 
 # Copy AndroidManifest.xml
-mkdir -p ${LOVE_ANDROID_SDL2_HOME}/app/src/main
-cp "proj.android/AndroidManifest.xml" ${LOVE_ANDROID_SDL2_HOME}/app/src/main || err 'Could not copy AndroidManifest.'
+AM_DEST="${LOVE_ANDROID_SDL2_HOME}/app/src/main"
+mkdir -p "${AM_DEST}"
+cp "proj.android/AndroidManifest.xml" ${AM_DEST} || err 'Could not copy AndroidManifest.'
+
+# Put original love2d activities under a new namespace.
+LOVE2D_PACKAGE="org.love2d.android"
+MAZE_PACKAGE="br.com.possatti.maze"
+ACTIVITIES_SOURCE="${LOVE_ANDROID_SDL2_HOME}/love/src/main/java/org/love2d/android"
+ACTIVITIES_DEST="${LOVE_ANDROID_SDL2_HOME}/app/src/main/java/br/com/possatti/maze"
+mkdir -p "$ACTIVITIES_DEST"
+cp "$ACTIVITIES_SOURCE"/* "$ACTIVITIES_DEST"
+perl -i -pe "s/${LOVE2D_PACKAGE}/${MAZE_PACKAGE}/" ${ACTIVITIES_DEST}/*
+
 
 # Start build
 # exit #!#

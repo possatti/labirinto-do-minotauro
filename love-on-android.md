@@ -21,3 +21,4 @@ Running LÖVE games on Android
 
 ## Other
  - Maybe `Start Gamedev` is easier: https://www.youtube.com/watch?annotation_id=annotation_444447295&feature=iv&src_vid=vfn1nTjPuOY&v=TAZo-pin4nE
+ - Or maybe `love-release`: https://github.com/MisterDA/love-release
