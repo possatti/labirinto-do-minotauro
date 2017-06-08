@@ -37,6 +37,9 @@ Game states:
 Dungeon generation:
  - https://github.com/SiENcE/astray
 
+Classes:
+ - https://github.com/kikito/middleclass
+
 ## Assets used
 
 On-screen controls:

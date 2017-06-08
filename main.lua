@@ -54,13 +54,6 @@ function love.load()
   heroLeftAnim  = anim8.newAnimation(g('1-3',3), 0.1)
   heroUpAnim    = anim8.newAnimation(g('1-3',4), 0.1)
 
-  -- Load map file
-  world = bump.newWorld()
-  -- local loadedData = loadmap('maps/20x20.lua', world)
-  local loadedData = loadmap('maps/first-level.lua', world)
-  map = loadedData.map
-  player = loadedData.player
-
   -- Load on-screen controls.
   onscreen:load()
 
@@ -69,8 +62,8 @@ function love.load()
   -- pixelFont = love.graphics.newFont('assets/fonts/04b03Regular.ttf')
 
   -- Load gamestates.
-  titlescreenState:load()
   gameState:load()
+  titlescreenState:load()
 end
 
 function love.keyreleased(key, code)

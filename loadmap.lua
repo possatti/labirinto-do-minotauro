@@ -8,7 +8,16 @@ local function bumpfilter(item, other)
   end
 end
 
-local function loadmap(path, world)
+--- Loads a map from Tiled using STI.
+-- @param gameInstance An instance to the gameState (game.lua). This is here againts my very will.
+--                     But I can't see any better way to change the level right now.
+local function loadmap(path, world, gameInstance)
+  -- Check that the map file exists.
+  if not love.filesystem.exists(path) then
+    error(string.format("The map file '%s' doesn't exist.", path))
+  end
+
+  -- Start the new map.
   local newmap = sti(path, {"bump"})
   newmap:bump_init(world)
 
@@ -57,7 +66,7 @@ local function loadmap(path, world)
 
   -- Update player location.
   dynamicLayer.update = function(self, dt)
-    local newpos = controlling.read(dt)
+    local newpos = controlling.read(dt, player)
     local actualX, actualY, cols, len = world:move(self.player, newpos.x - player.bump.offset.x, newpos.y - player.bump.offset.y, bumpfilter)
 
     self.player.x = actualX + player.bump.offset.x
@@ -67,8 +76,12 @@ local function loadmap(path, world)
 
     for i, col in ipairs(cols) do
       if col.other.name == 'Upstairs' then
+        gameInstance.currentLevel = gameInstance.currentLevel + 1
+        gameInstance:loadlevel(gameInstance.currentLevel)
         debug('Move upstairs.')
       elseif col.other.name == 'Downstairs' then
+        gameInstance.currentLevel = gameInstance.currentLevel - 1
+        gameInstance:loadlevel(gameInstance.currentLevel)
         debug('Move downstairs.')
       end
     end
@@ -124,8 +137,8 @@ local function loadmap(path, world)
 
       -- Point marking player direction.
       love.graphics.setColor(255,0,0,255)
-      local dY = player.y + math.sin(p.direction) * tileSize
-      local dX = player.x + math.cos(p.direction) * tileSize
+      local dY = p.y + math.sin(p.direction) * tileSize
+      local dX = p.x + math.cos(p.direction) * tileSize
       love.graphics.points(math.floor(dX), math.floor(dY))
       love.graphics.setColor(255,255,255,255)
     end

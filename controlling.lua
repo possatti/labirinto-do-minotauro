@@ -2,7 +2,7 @@ local direction = 0
 local playerMoved
 
 local controlling = {
-  read = function(dt)
+  read = function(dt, player)
     local newpos = {
       x = player.x,
       y = player.y,
